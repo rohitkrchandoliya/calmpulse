@@ -1,0 +1,36 @@
+{
+  "name": "calmpulse",
+  "version": "1.0.0",
+  "description": "CalmPulse — a consent-first breathing and relaxation companion powered by the Presage SmartSpectra SDK.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.mjs",
+    "check": "node --check server/index.mjs && node --check server/vitals.mjs && node --check public/app.js && node --check public/breathing.js && node --check public/demo.js"
+  },
+  "dependencies": {
+    "@smartspectra/node-sdk": "^3.5.0"
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
