@@ -12,8 +12,8 @@ need (a calmer two-to-ten minutes, on demand) with consent and responsible
 data handling designed in from the first screen, not bolted on.
 
 > **Wellness only.** CalmPulse is a relaxation aid, not a medical device. It
-does not diagnose, treat, or monitor any condition. SmartSpectra metrics
-are estimates for general wellness and informational purposes.
+> does not diagnose, treat, or monitor any condition. SmartSpectra metrics
+> are estimates for general wellness and informational purposes.
 
 ---
 
@@ -90,50 +90,7 @@ calibration, adaptive pacing — on clearly labelled simulated signals.
 - Video frames are processed **on this device** by the SDK and exist only in
   memory during measurement. CalmPulse **never records, saves, or uploads
   video**, and it does not store readings; closing the tab or pressing
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-“Stop camera” ends measurement and releases the camera.
+  “Stop camera” ends measurement and releases the camera.
 - The SDK contacts Presage servers only to **authenticate the API key and
   validate the subscription** (and fetch processing models).
 - **SDK telemetry is disabled** in CalmPulse (`enableTelemetry: false`).
@@ -146,17 +103,6 @@ calibration, adaptive pacing — on clearly labelled simulated signals.
 
 The same disclosure, in full, appears in the DEV submission post for the
 challenge.
-
-
-
-
-
-
-
-
-
-
-
 
 ## Project structure
 
@@ -190,23 +136,3 @@ requires a machine with a webcam and an API key (see Quick start).
 CalmPulse's own code is MIT. The SmartSpectra SDK is Presage Technologies'
 software, used under their terms via the official npm package
 `@smartspectra/node-sdk`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
