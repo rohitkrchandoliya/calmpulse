@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CalmPulse — Breathe with your own rhythm</title>
+<meta name="description" content="A consent-first breathing and relaxation companion powered by the Presage SmartSpectra SDK.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%232f9e7e' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%232f9e7e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M6 16h5l2-5 3 9 2.5-4H26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div>
+      <h1>CalmPulse</h1>
+      <p class="tagline">A breathing companion that listens to your body first</p>
+    </div>
+  </div>
+  <span id="mode-badge" class="badge badge-idle">Checking setup…</span>
+</header>
+
+<main>
+  <!-- ============ CONSENT VIEW ============ -->
+  <section id="consent-view" class="card consent-card">
+    <h2>Before anything starts: your camera, your choice</h2>
+    <p>
+      CalmPulse uses the <strong>Presage SmartSpectra SDK</strong> to estimate your
+      pulse and breathing rate from your webcam, then guides a breathing exercise
+      at a pace adapted to <em>your</em> measured breathing. Nothing is measured
+      until you consent below and press Start. Please read how it works:
+    </p>
+    <ul class="consent-list">
+      <li><strong>On your device.</strong> CalmPulse runs locally on this computer. When you start a session, the local CalmPulse process opens your webcam and the SmartSpectra SDK processes the video on this machine to estimate pulse and breathing.</li>
+      <li><strong>No recording, no storage.</strong> Video frames exist only in memory while measuring. CalmPulse does not record, save, or upload video, and it does not store your readings. Closing this tab or pressing “Stop camera” ends measurement and releases the camera.</li>
+      <li><strong>What leaves this machine.</strong> The SDK contacts Presage servers only to authenticate the API key and validate the subscription. CalmPulse <strong>disables SDK telemetry</strong> and never uses Presage's optional AI Insights feature, so no vitals are sent for analysis.</li>
+      <li><strong>Wellness only.</strong> CalmPulse is a relaxation aid, not a medical device. It does not diagnose, treat, or monitor any condition, and its readings are estimates for personal wellness use.</li>
+      <li><strong>You are in control.</strong> Consent is per-session. You can stop at any time, and nothing runs in the background.</li>
+    </ul>
+
+    <div id="readiness" class="readiness" aria-live="polite">
+      <h3>Setup status</h3>
+      <ul>
+        <li id="ready-sdk">SmartSpectra SDK: <span>checking…</span></li>
+        <li id="ready-key">API key: <span>checking…</span></li>
+        <li id="ready-camera">Camera: <span>checking…</span></li>
+      </ul>
+      <p id="readiness-note" class="note"></p>
+    </div>
+
+    <label class="consent-check">
+      <input type="checkbox" id="consent-checkbox">
+      <span>I understand the points above and I consent to camera-based pulse and breathing measurement on this device for this session.</span>
+    </label>
+
+    <div class="button-row">
+      <button id="start-live-btn" class="btn btn-primary" disabled>Start with camera</button>
+      <button id="start-demo-btn" class="btn btn-ghost">Explore demo mode instead</button>
+    </div>
+    <p class="note">
+      Demo mode uses clearly labelled simulated signals — no camera, no SDK —
+      so you can explore the full experience anywhere.
+    </p>
+  </section>
+
+  <!-- ============ MAIN VIEW ============ -->
+  <section id="main-view" hidden>
+    <div id="demo-banner" class="demo-banner" hidden>
+      DEMO MODE — these are simulated signals, not measurements. No camera is in use.
+    </div>
+
+    <div class="toolbar">
+      <p id="session-status" class="session-status">Session: idle</p>
+      <button id="stop-btn" class="btn btn-danger" hidden>Stop camera</button>
+      <button id="exit-demo-btn" class="btn btn-ghost" hidden>Exit demo</button>
+    </div>
+
+    <div class="grid">
+      <article class="card metric-card">
+        <h3>Pulse</h3>
+        <p class="metric-value"><span id="pulse-value">––</span><span class="unit">bpm</span></p>
+        <p class="metric-sub" id="pulse-sub">Waiting for signal…</p>
+      </article>
+
+      <article class="card metric-card">
+        <h3>Breathing rate</h3>
+        <p class="metric-value"><span id="breath-value">––</span><span class="unit">br/min</span></p>
+        <p class="metric-sub" id="breath-sub">Waiting for signal…</p>
+      </article>
+
+      <article class="card metric-card">
+        <h3>HRV (RMSSD)</h3>
+        <p class="metric-value"><span id="hrv-value">––</span><span class="unit">ms</span></p>
+        <p class="metric-sub">Heart-rate variability, when available</p>
+      </article>
+    </div>
+
+    <article class="card">
+      <div class="card-head">
+        <h3>Your breathing, live</h3>
+        <p id="hint-line" class="hint" aria-live="polite"></p>
+      </div>
+      <canvas id="waveform" width="900" height="180" aria-label="Live breathing waveform"></canvas>
+    </article>
+
+    <article class="card breathing-card">
+      <h3>Guided breathing</h3>
+      <p class="note" id="breathing-intro">
+        CalmPulse first measures your natural breathing for a few seconds, then
+        guides you a little slower than your own pace. You can also set the pace
+        yourself.
+      </p>
+
+      <div class="breathing-stage">
+        <div id="breath-circle" class="breath-circle">
+          <span id="breath-phase">Ready</span>
+        </div>
+        <div class="breathing-stats">
+          <p>Guide pace: <strong id="guide-pace-label">–</strong></p>
+          <p>Your pace now: <strong id="your-pace-label">–</strong></p>
+          <p>Breaths completed: <strong id="breath-count">0</strong></p>
+          <p>Time remaining: <strong id="time-remaining">–</strong></p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label>
+          Session length
+          <select id="duration-select">
+            <option value="120">2 minutes</option>
+            <option value="300" selected>5 minutes</option>
+            <option value="600">10 minutes</option>
+          </select>
+        </label>
+        <label>
+          Manual pace (br/min)
+          <input type="range" id="pace-slider" min="4" max="10" step="0.1" value="5.5">
+          <span id="pace-slider-label">5.5</span>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="calibrate-btn" class="btn btn-primary">Measure my pace &amp; begin</button>
+        <button id="guide-start-btn" class="btn">Begin at slider pace</button>
+        <button id="guide-pause-btn" class="btn" disabled>Pause</button>
+        <button id="guide-stop-btn" class="btn btn-ghost" disabled>End exercise</button>
+      </div>
+      <p class="note" id="calibration-status" aria-live="polite"></p>
+    </article>
+  </section>
+</main>
+
+<footer>
+  <p>
+    CalmPulse is a wellness and relaxation aid — not a medical device, and not
+    for diagnosis or treatment. Measurements are estimates from the Presage
+    SmartSpectra SDK, computed on this device. Video is never recorded or
+    uploaded by CalmPulse; SDK telemetry is disabled; readings are not stored.
+  </p>
+  <p>Built with the Presage SmartSpectra SDK for the DEV Presage SmartSpectra SDK Challenge.</p>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
